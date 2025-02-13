@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "Data_Engineering"
+version = "1.0.0"
+description = "Pipeline for Data Engineering"
+authors = ["Pramod Mulagala"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pgcli = "^4.1.0"
+jupyter = "^1.1.1"
+sqlalchemy = ">=1.4.36,<2.0"
+pandas = "^2.2.3"
+psycopg2 = "^2.9.10"
+apache-airflow = "2.10.2"
+python-dotenv = "^1.0.0"
+apache-airflow-providers-google = "^10.15.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

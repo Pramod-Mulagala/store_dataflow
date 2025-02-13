@@ -1,0 +1,26 @@
+gcp:
+  project_id: "data-engineering-1312"
+  region: "us-central1"
+  data_lake_bucket: "data-engineering-1312-data-lake"
+  dataset_id: "de_dataset"
+
+data_quality:
+  checks:
+    null_threshold: 0.05
+    duplicate_threshold: 0
+    value_ranges:
+      numeric_columns:
+        min: 0
+        max: 1000000
+      date_columns:
+        min: "2024-01-01"
+        max: "2024-12-31"
+
+email_notifications:
+  enabled: true
+  recipients:
+    - mlgl.pramod@gmail.com
+
+schedule_intervals:
+  etl_pipeline: "@daily"
+  quality_checks: "@daily" 
