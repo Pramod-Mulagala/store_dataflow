@@ -1,0 +1,53 @@
+version: 2
+
+sources:
+  - name: raw_db
+    database: RAW_DB
+    schema: PUBLIC
+    tables:
+      - name: raw_sales
+        columns:
+          - name: transaction_id
+            tests:
+              - unique
+              - not_null
+          - name: date
+            tests:
+              - not_null
+          - name: total_amount
+            tests:
+              - not_null
+              - positive_values
+          - name: quantity
+            tests:
+              - not_null
+              - positive_values
+
+models:
+  - name: stg_sales
+    columns:
+      - name: transaction_id
+        tests:
+          - unique
+          - not_null
+      - name: total_amount
+        tests:
+          - positive_values
+          
+  - name: daily_sales_metrics
+    columns:
+      - name: transaction_date
+        tests:
+          - not_null
+          - unique
+      - name: total_revenue
+        tests:
+          - not_null
+          - positive_values
+
+  - name: product_category_analysis
+    columns:
+      - name: product_category
+        tests:
+          - not_null
+          - unique 

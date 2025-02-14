@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 import pandas as pd
 import logging
 
@@ -15,37 +15,57 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-PROJECT_ID = "data-engineering-1312"
-DATASET_NAME = "de_dataset"
-
 def check_data_quality(**context):
-    bq_hook = BigQueryHook(use_legacy_sql=False)
+    snow_hook = SnowflakeHook(snowflake_conn_id='snowflake_default')
     
-    # Example quality checks
     checks = [
         {
             'name': 'null_check',
-            'query': f"""
+            'query': """
                 SELECT column_name, COUNT(*) as null_count
-                FROM `{PROJECT_ID}.{DATASET_NAME}.sample_table`
-                WHERE column_name IS NULL
+                FROM RAW_DB.PUBLIC.RAW_SALES
+                WHERE transaction_id IS NULL 
+                   OR date IS NULL 
+                   OR total_amount IS NULL
                 GROUP BY column_name
             """
         },
         {
             'name': 'duplicate_check',
-            'query': f"""
-                SELECT id, COUNT(*) as duplicate_count
-                FROM `{PROJECT_ID}.{DATASET_NAME}.sample_table`
-                GROUP BY id
+            'query': """
+                SELECT transaction_id, COUNT(*) as duplicate_count
+                FROM RAW_DB.PUBLIC.RAW_SALES
+                GROUP BY transaction_id
                 HAVING COUNT(*) > 1
+            """
+        },
+        {
+            'name': 'negative_values_check',
+            'query': """
+                SELECT 'quantity' as column_name, COUNT(*) as negative_count
+                FROM RAW_DB.PUBLIC.RAW_SALES
+                WHERE quantity < 0
+                UNION ALL
+                SELECT 'total_amount' as column_name, COUNT(*) as negative_count
+                FROM RAW_DB.PUBLIC.RAW_SALES
+                WHERE total_amount < 0
+            """
+        },
+        {
+            'name': 'date_range_check',
+            'query': """
+                SELECT 
+                    MIN(date) as earliest_date,
+                    MAX(date) as latest_date,
+                    COUNT(*) as total_records
+                FROM RAW_DB.PUBLIC.RAW_SALES
             """
         }
     ]
     
     results = {}
     for check in checks:
-        df = bq_hook.get_pandas_df(check['query'])
+        df = snow_hook.get_pandas_df(check['query'])
         results[check['name']] = df.to_dict()
         
         if not df.empty:
@@ -54,9 +74,9 @@ def check_data_quality(**context):
     return results
 
 with DAG(
-    'data_quality_checks',
+    'snowflake_data_quality_checks',
     default_args=default_args,
-    description='Data quality checking pipeline',
+    description='Snowflake data quality checking pipeline',
     schedule_interval='@daily',
     catchup=False
 ) as dag:

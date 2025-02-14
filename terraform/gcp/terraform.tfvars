@@ -1,5 +1,0 @@
-project_id          = "data-engineering-1312"
-project_name        = "Data Engineering"
-billing_account_id  = "01D43B-5DCFD6-6CA52F"
-credentials_file    = "~/Documents/Projects/Cursor/Terraform_key.json"
-region             = "us-central1" 
