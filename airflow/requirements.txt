@@ -1,0 +1,11 @@
+apache-airflow[postgres,google,snowflake]==2.7.1
+google-cloud-storage
+google-cloud-bigquery
+snowflake-connector-python
+snowflake-sqlalchemy
+pandas
+pyyaml
+great-expectations
+dbt-core>=1.5.0
+dbt-snowflake>=1.5.0
+dbt-postgres>=1.5.0 

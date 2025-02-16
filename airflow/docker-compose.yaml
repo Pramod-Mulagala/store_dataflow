@@ -1,0 +1,96 @@
+version: '3'
+services:
+  # postgres:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_USER: airflow
+  #     POSTGRES_PASSWORD: airflow
+  #     POSTGRES_DB: airflow
+  #   volumes:
+  #     - postgres-db-volume:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD", "pg_isready", "-U", "airflow"]
+  #     interval: 5s
+  #     retries: 5
+  #   restart: always
+
+  airflow-webserver:
+    build: .
+    command: webserver
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      # GCP Configuration
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/gcp/credentials.json
+      - GCP_PROJECT_ID=${PROJECT_ID:-data-engineering-1312}
+      - GCP_REGION=${REGION:-us-central1}
+      - DATA_LAKE_BUCKET=${DATA_LAKE_BUCKET:-data-engineering-1312-data-lake}
+      - DATASET_ID=${DATASET_ID:-de_dataset}
+      # Snowflake Configuration (for Airflow to connect directly to Snowflake)
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT}
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}
+      - SNOWFLAKE_WAREHOUSE=${SNOWFLAKE_WAREHOUSE}
+      # DBT Configuration
+      - DBT_PROFILES_DIR=/opt/airflow/dbt/profiles
+      - DBT_PROJECT_DIR=/opt/airflow/dbt
+      # DBT Snowflake Connection (DBT uses different credentials/role)
+      - DBT_SNOWFLAKE_ACCOUNT=${DBT_SNOWFLAKE_ACCOUNT}
+      - DBT_SNOWFLAKE_USER=${DBT_SNOWFLAKE_USER}
+      - DBT_SNOWFLAKE_PASSWORD=${DBT_SNOWFLAKE_PASSWORD}
+      - DBT_SNOWFLAKE_ROLE=${DBT_SNOWFLAKE_ROLE:-TRANSFORMER}
+      - DBT_SNOWFLAKE_WAREHOUSE=${DBT_SNOWFLAKE_WAREHOUSE:-TRANSFORM_WH}
+      - DBT_SNOWFLAKE_DATABASE=${DBT_SNOWFLAKE_DATABASE:-RAW_DB}
+      - DBT_SNOWFLAKE_SCHEMA=${DBT_SNOWFLAKE_SCHEMA:-PUBLIC}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
+      - ./dbt:/opt/airflow/dbt
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./gcp/credentials.json}:/opt/airflow/gcp/credentials.json
+    restart: always
+
+  airflow-scheduler:
+    build: .
+    command: scheduler
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      # GCP Configuration
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/gcp/credentials.json
+      - GCP_PROJECT_ID=${PROJECT_ID:-data-engineering-1312}
+      - GCP_REGION=${REGION:-us-central1}
+      - DATA_LAKE_BUCKET=${DATA_LAKE_BUCKET:-data-engineering-1312-data-lake}
+      - DATASET_ID=${DATASET_ID:-de_dataset}
+      # Snowflake Configuration (for Airflow to connect directly to Snowflake)
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT}
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}
+      - SNOWFLAKE_WAREHOUSE=${SNOWFLAKE_WAREHOUSE}
+      # DBT Configuration
+      - DBT_PROFILES_DIR=/opt/airflow/dbt/profiles
+      - DBT_PROJECT_DIR=/opt/airflow/dbt
+      # DBT Snowflake Connection (DBT uses different credentials/role)
+      - DBT_SNOWFLAKE_ACCOUNT=${DBT_SNOWFLAKE_ACCOUNT}
+      - DBT_SNOWFLAKE_USER=${DBT_SNOWFLAKE_USER}
+      - DBT_SNOWFLAKE_PASSWORD=${DBT_SNOWFLAKE_PASSWORD}
+      - DBT_SNOWFLAKE_ROLE=${DBT_SNOWFLAKE_ROLE:-TRANSFORMER}
+      - DBT_SNOWFLAKE_WAREHOUSE=${DBT_SNOWFLAKE_WAREHOUSE:-TRANSFORM_WH}
+      - DBT_SNOWFLAKE_DATABASE=${DBT_SNOWFLAKE_DATABASE:-RAW_DB}
+      - DBT_SNOWFLAKE_SCHEMA=${DBT_SNOWFLAKE_SCHEMA:-PUBLIC}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
+      - ./dbt:/opt/airflow/dbt
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./gcp/credentials.json}:/opt/airflow/gcp/credentials.json
+    restart: always
+
+# volumes:
+#   postgres-db-volume: 
