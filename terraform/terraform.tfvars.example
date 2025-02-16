@@ -1,0 +1,29 @@
+# GCP Configuration
+project_id = "your-project-id"
+region     = "us-central1"
+zone       = "us-central1-a"
+
+# Database Configuration
+postgres_password = "change-this-password"
+database_name     = "retail_analytics"
+database_user     = "postgres"
+
+# SSH Configuration
+ssh_user         = "ubuntu"
+ssh_pub_key_path = "~/.ssh/id_rsa.pub"
+
+# Snowflake Configuration
+snowflake_account   = "your-snowflake-account"
+snowflake_user      = "your-snowflake-user"
+snowflake_password  = "your-snowflake-password"
+snowflake_warehouse = "COMPUTE_WH"
+
+# DBT Configuration
+dbt_account   = "your-snowflake-account"
+dbt_user      = "DBT_USER"
+dbt_password  = "your-dbt-password"
+dbt_warehouse = "TRANSFORM_WH"
+dbt_database  = "RAW_DB"
+dbt_schema    = "PUBLIC"
+dbt_role      = "TRANSFORMER"
+dbt_threads   = 4 
